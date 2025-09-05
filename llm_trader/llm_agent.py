@@ -1,9 +1,8 @@
-"""
-LLM Agent for OpenRouter integration with JSON validation and repair.
-"""
+"""LLM Agent for OpenRouter integration with JSON validation and repair."""
 
 import json
 import asyncio
+import ast
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 import uuid
@@ -236,17 +235,32 @@ class LLMAgent:
                 decision = TradingDecision(**data)
                 logger.info(f"JSON validation successful on attempt {attempt + 1}")
                 return decision
-                
+
             except (json.JSONDecodeError, ValidationError) as e:
                 logger.warning(f"JSON validation failed (attempt {attempt + 1}): {e}")
-                
+
+                # Sometimes the LLM returns a Python-style dictionary using
+                # single quotes instead of valid JSON.  Attempt to parse such
+                # responses using ``ast.literal_eval`` before resorting to the
+                # more expensive repair step.
+                if isinstance(e, json.JSONDecodeError):
+                    try:
+                        data = ast.literal_eval(json_text)
+                        decision = TradingDecision(**data)
+                        logger.info(
+                            f"JSON validation successful after literal eval on attempt {attempt + 1}"
+                        )
+                        return decision
+                    except Exception:
+                        pass
+
                 if attempt < 2:  # Try to repair
                     self.metrics["repair_attempts"] += 1
                     repaired_json = await self._repair_json(json_text, str(e))
                     if repaired_json:
                         json_text = repaired_json
                         continue
-                
+
                 logger.error(f"JSON validation failed after all attempts: {e}")
                 return None
         

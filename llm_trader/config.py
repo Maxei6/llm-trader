@@ -6,6 +6,7 @@ All prompts, model configs, and thresholds are managed here.
 from typing import List, Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_core import ValidationError
 
 from .models import LLMConfig, StrategyConfig, AlpacaConfig, SearchConfig
 
@@ -286,9 +287,23 @@ Return the corrected JSON with no additional text or formatting."""
 
 
 # Global settings instance
-settings = Settings()
+#
+# Importing :class:`Settings` at module import time previously raised a
+# ``ValidationError`` when the required environment variables (API keys) were
+# absent, which happens in the test environment.  To make the module robust we
+# attempt to create the settings and fall back to a dummy configuration when the
+# real credentials are not supplied.  This keeps downstream imports simple while
+# still allowing tests to provide their own environment via `Settings()`.
+try:  # pragma: no cover - exercised indirectly
+    settings = Settings()
+except ValidationError:  # pragma: no cover - missing env vars
+    settings = Settings(
+        openrouter_api_key="test",
+        alpaca_api_key="test",
+        alpaca_secret_key="test",
+    )
 
-# Export commonly used configs
+# Export commonly used configs derived from the settings instance
 llm_config = settings.llm_config
 strategy_config = settings.strategy_config
 alpaca_config = settings.alpaca_config

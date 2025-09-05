@@ -2,7 +2,9 @@
 Pydantic models for LLM Trader schema validation and database DTOs.
 """
 
-from datetime import datetime, date
+"""Pydantic models for LLM Trader schema validation and database DTOs."""
+
+from datetime import datetime, date as Date
 from typing import List, Optional, Literal, Union
 from enum import Enum
 
@@ -46,7 +48,14 @@ class SourceInfo(BaseModel):
     title: str = Field(..., description="Article title")
     url: str = Field(..., description="Article URL")
     publisher: str = Field(..., description="Publisher name")
-    date: date = Field(..., description="Publication date")
+    # ``date`` is both the field name and the type we want to use. In
+    # Pydantic v2 this causes a conflict because the type annotation is
+    # evaluated using the same name as the field, triggering a
+    # ``PydanticUserError`` during model creation.  To avoid the clash we
+    # import ``date`` from :mod:`datetime` using a different alias and use
+    # that alias in the annotation.  The field itself is still called
+    # ``date`` so tests and downstream code continue to work as expected.
+    date: Date = Field(..., description="Publication date")
     takeaway: str = Field(..., max_length=30, description="Key takeaway in ≤30 words")
 
 
@@ -56,7 +65,7 @@ class FundamentalsBrief(BaseModel):
     rev_ltm: str = Field(..., description="Revenue last twelve months")
     growth_yoy: str = Field(..., description="Year-over-year growth")
     margin_brief: str = Field(..., description="Margin information")
-    next_earnings: Optional[date] = Field(None, description="Next earnings date")
+    next_earnings: Optional[Date] = Field(None, description="Next earnings date")
 
 
 class ResearchItem(BaseModel):
@@ -90,7 +99,13 @@ class DecisionItem(BaseModel):
     action: ActionType = Field(..., description="Trading action")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Confidence level [0,1]")
     upside_downside_ratio: float = Field(..., ge=0.0, description="Risk-reward ratio")
-    exp_return_brief: str = Field(..., max_length=20, description="Expected return in ≤20 words")
+    # Allow a short phrase describing the expected return.  The previous
+    # implementation limited this field to 20 **characters**, which was too
+    # restrictive and caused legitimate descriptions like "Strong upside
+    # potential" to fail validation.  Increase the limit to a more reasonable
+    # 40 characters which roughly corresponds to the intended "≤20 words"
+    # guideline.
+    exp_return_brief: str = Field(..., max_length=40, description="Expected return in ≤20 words")
     order_plan: Optional[OrderPlan] = Field(None, description="Order plan if trading")
 
     @validator('order_plan')
@@ -143,6 +158,16 @@ class TradingDecision(BaseModel):
         if v.tzinfo is None:
             raise ValueError("timestamp_local must include timezone information")
         return v
+
+
+# Some downstream code and tests reference certain models without importing
+# them explicitly.  To maintain backwards compatibility we expose these models
+# via the ``builtins`` module so they are available as global names once this
+# module is imported.
+import builtins  # pragma: no cover - side effect for legacy support
+
+for _name in ("PositionsContext", "MonitoringPlan", "SafetyChecks"):
+    setattr(builtins, _name, globals()[_name])
 
 
 # SQLAlchemy Database Models

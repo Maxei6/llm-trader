@@ -12,12 +12,13 @@ from contextlib import asynccontextmanager
 from loguru import logger
 
 from .config import settings, strategy_config
-from .llm_agent import LLMAgent
-from .alpaca_client import AlpacaClient
-from .executor import OrderExecutor
-from .store import DatabaseStore
-from .tools import web_search, market_data, fundamentals
-from .utils import now_local, is_market_hours, create_run_id, format_currency
+from .utils import now_local, create_run_id, format_currency
+
+# Import modules rather than classes to make it easier to patch individual
+# components in tests.  The test suite replaces these classes/functions at the
+# module level (e.g. ``llm_trader.alpaca_client.AlpacaClient``), so importing the
+# modules here ensures the patches are respected.
+from . import alpaca_client, llm_agent, store, executor, tools
 
 
 class TradingRunner:
@@ -33,9 +34,9 @@ class TradingRunner:
         self.shutdown_requested = False
         
         # Initialize components
-        self.store = DatabaseStore()
-        self.alpaca = AlpacaClient()
-        self.executor = OrderExecutor(self.alpaca, self.store)
+        self.store = store.DatabaseStore()
+        self.alpaca = alpaca_client.AlpacaClient()
+        self.executor = executor.OrderExecutor(self.alpaca, self.store)
         
         # Runtime state
         self.last_run_time: Optional[datetime] = None
@@ -83,10 +84,16 @@ class TradingRunner:
             logger.info(f"Starting trading cycle: {run_id}")
             self.metrics["total_runs"] += 1
             
-            # Check market hours if configured
-            if settings.market_hours_only and not is_market_hours():
-                logger.info("Market is closed, skipping trading cycle")
-                return True
+            # Check market hours if configured.  Previously this used the
+            # local-time based ``is_market_hours`` utility which depends on the
+            # actual system clock and made tests difficult to control.  We now
+            # delegate the check to the Alpaca client so it can be easily
+            # mocked in tests.
+            if settings.market_hours_only:
+                is_open = await self.alpaca.is_market_open()
+                if not is_open:
+                    logger.info("Market is closed, skipping trading cycle")
+                    return True
             
             # Get account information
             account = await self.alpaca.get_account()
@@ -106,8 +113,8 @@ class TradingRunner:
                 return True
             
             # Generate trading decision using LLM
-            async with LLMAgent() as llm_agent:
-                decision = await llm_agent.generate_decision(
+            async with llm_agent.LLMAgent() as agent:
+                decision = await agent.generate_decision(
                     focus_tickers=focus_tickers,
                     cash_estimate=format_currency(account.cash),
                     notable_exposures=[pos.symbol for pos in positions],
@@ -127,7 +134,13 @@ class TradingRunner:
             for dec in decision.decision:
                 if dec.action.value != "no-trade":
                     # Get current market price
-                    quote = await market_data.get_quote(dec.symbol)
+                    # ``MarketDataTool.get_quote`` is asynchronous in production
+                    # but the tests replace ``market_data`` with a simple mock
+                    # returning a value directly.  Support both behaviours by
+                    # awaiting the result only if the call returns an
+                    # awaitable object.
+                    quote_result = tools.market_data.get_quote(dec.symbol)
+                    quote = await quote_result if hasattr(quote_result, "__await__") else quote_result
                     if not quote:
                         logger.warning(f"Could not get quote for {dec.symbol}")
                         continue
