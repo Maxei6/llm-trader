@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "run_id": "20240115_143022_a1b2c3d4",
+  "timestamp_local": "2024-01-15 14:30:22 EST",
+  "universe_considered": ["AAPL", "MSFT", "GOOGL", "TSLA", "NVDA"],
+  "positions_context": {
+    "cash_estimate": "$47,500",
+    "notable_exposures": ["Technology sector concentration", "Large cap bias"]
+  },
+  "research": [
+    {
+      "symbol": "AAPL",
+      "sources": [
+        {
+          "title": "Apple Reports Record Q1 Revenue Driven by iPhone Sales",
+          "url": "https://www.reuters.com/technology/apple-q1-earnings-2024-01-15/",
+          "publisher": "reuters.com",
+          "date": "2024-01-15",
+          "takeaway": "iPhone revenue up 15% YoY, services growth accelerating"
+        },
+        {
+          "title": "Apple Vision Pro Pre-Orders Exceed Expectations",
+          "url": "https://www.bloomberg.com/news/articles/2024-01-15/apple-vision-pro-demand",
+          "publisher": "bloomberg.com", 
+          "date": "2024-01-15",
+          "takeaway": "Strong initial demand signals new product category success"
+        },
+        {
+          "title": "Analysts Raise Apple Price Targets After Earnings Beat",
+          "url": "https://www.cnbc.com/2024/01/15/apple-analyst-upgrades.html",
+          "publisher": "cnbc.com",
+          "date": "2024-01-15",
+          "takeaway": "Multiple firms increase targets, cite AI integration potential"
+        }
+      ],
+      "fundamentals_brief": {
+        "mkt_cap": "$3.0T",
+        "rev_ltm": "$383.3B",
+        "growth_yoy": "8.2%",
+        "margin_brief": "Op: 29.8%, Net: 25.3%",
+        "next_earnings": "2024-04-25"
+      },
+      "thesis": "Strong iPhone cycle + Vision Pro launch creating momentum with AI catalyst ahead",
+      "sentiment": "positive",
+      "hype_score": 0.85,
+      "catalyst": "product",
+      "checks": [
+        "Revenue beat by 3.2% vs consensus",
+        "iPhone ASP increased 8% sequentially", 
+        "Vision Pro pre-orders 200K+ units",
+        "Services margin expansion to 71%",
+        "China revenue stabilization after 3Q decline",
+        "AI integration roadmap announced"
+      ],
+      "risks": [
+        "High valuation at 28x P/E vs historical 22x",
+        "China regulatory uncertainty remains",
+        "Vision Pro adoption curve uncertain",
+        "Seasonal iPhone demand peak passed"
+      ],
+      "liquidity_ok": true
+    },
+    {
+      "symbol": "TSLA", 
+      "sources": [
+        {
+          "title": "Tesla Deliveries Miss Q4 Estimates Despite Price Cuts",
+          "url": "https://www.wsj.com/articles/tesla-q4-deliveries-2024-01-15/",
+          "publisher": "wsj.com",
+          "date": "2024-01-15", 
+          "takeaway": "Delivered 1.81M vs 1.85M expected, margin pressure evident"
+        },
+        {
+          "title": "Musk Warns of 'Notably Lower' Growth in 2024",
+          "url": "https://www.marketwatch.com/story/tesla-growth-warning-2024-01-15/",
+          "publisher": "marketwatch.com",
+          "date": "2024-01-15",
+          "takeaway": "CEO guidance disappoints, cites economic headwinds"
+        }
+      ],
+      "fundamentals_brief": {
+        "mkt_cap": "$790B",
+        "rev_ltm": "$96.8B", 
+        "growth_yoy": "19.3%",
+        "margin_brief": "Op: 8.1%, Net: 7.9%",
+        "next_earnings": "2024-01-24"
+      },
+      "thesis": "Delivery miss + growth warning signal demand weakness amid competition",
+      "sentiment": "negative",
+      "hype_score": 0.25,
+      "catalyst": "guidance",
+      "checks": [
+        "Q4 deliveries 1.81M vs 1.85M consensus miss",
+        "Price cuts of 6-20% across models in Q4",
+        "Cybertruck production ramp slower than expected", 
+        "FSD revenue recognition delayed again"
+      ],
+      "risks": [
+        "EV competition intensifying globally",
+        "Margin compression from price war",
+        "Regulatory scrutiny on FSD claims",
+        "Musk distraction with other ventures"
+      ],
+      "liquidity_ok": true
+    }
+  ],
+  "decision": [
+    {
+      "symbol": "AAPL",
+      "action": "long",
+      "confidence": 0.82,
+      "upside_downside_ratio": 1.9,
+      "exp_return_brief": "12-18% upside on AI cycle acceleration",
+      "order_plan": {
+        "type": "limit",
+        "entry_note": "Vision Pro momentum + AI catalyst",
+        "limit_price": 185.50,
+        "stop_logic": "2.2x ATR(14) ≈ $8.20 below entry",
+        "take_profit_logic": "1.8R target or trail 1.5x ATR",
+        "size_pct_equity": 0.75,
+        "qty_estimate": 27
+      }
+    },
+    {
+      "symbol": "TSLA",
+      "action": "short", 
+      "confidence": 0.71,
+      "upside_downside_ratio": 1.6,
+      "exp_return_brief": "15-25% downside on demand concerns",
+      "order_plan": {
+        "type": "limit",
+        "entry_note": "Growth warning + delivery miss",
+        "limit_price": 238.75,
+        "stop_logic": "2.0x ATR(14) ≈ $12.40 above entry", 
+        "take_profit_logic": "1.6R target or trail 1.8x ATR",
+        "size_pct_equity": 0.65,
+        "qty_estimate": 21
+      }
+    },
+    {
+      "symbol": "MSFT",
+      "action": "no-trade",
+      "confidence": 0.45,
+      "upside_downside_ratio": 1.1,
+      "exp_return_brief": "Mixed signals, await clarity"
+    },
+    {
+      "symbol": "GOOGL", 
+      "action": "no-trade",
+      "confidence": 0.38,
+      "upside_downside_ratio": 0.9,
+      "exp_return_brief": "Regulatory overhang limits upside"
+    },
+    {
+      "symbol": "NVDA",
+      "action": "no-trade", 
+      "confidence": 0.52,
+      "upside_downside_ratio": 1.3,
+      "exp_return_brief": "High volatility, wait for setup"
+    }
+  ],
+  "monitoring": {
+    "interval": "daily close",
+    "auto_exit": [
+      "sentiment flip on key catalyst",
+      "stop loss breach", 
+      "earnings guidance revision",
+      "sector rotation signals"
+    ],
+    "review_checks": [
+      "Vision Pro adoption metrics weekly",
+      "Tesla delivery trends monthly",
+      "AI integration progress quarterly",
+      "Competitive positioning shifts"
+    ],
+    "next_review_after_hours": 18
+  },
+  "notes": [
+    "Strong earnings season creating momentum opportunities",
+    "EV sector showing divergence - pick winners/losers",
+    "AI theme gaining traction but valuations stretched",
+    "Monitor Fed policy shifts affecting growth stocks"
+  ],
+  "safety": {
+    "why_no_trade_if_any": "MSFT/GOOGL/NVDA lack clear directional catalysts with acceptable risk-reward",
+    "drawdown_kill_switch_suggestion": "pause all new positions if portfolio drawdown exceeds 6% from recent peak"
+  }
+}
+
