@@ -14,10 +14,13 @@ from loguru import logger
 
 from .config import settings
 from .models import (
-    Base, DBTradingRun, DBResearchItem, DBDecision, DBOrder, 
+    Base, DBTradingRun, DBResearchItem, DBDecision, DBOrder,
     DBPosition, DBEquityCurve, DBLog, TradingDecision
 )
-from .executor import ExecutionResult, ExecutionPlan, ExecutionStatus
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # pragma: no cover - used only for type hints
+    from .executor import ExecutionResult, ExecutionPlan, ExecutionStatus
 
 
 class DatabaseStore:
@@ -187,9 +190,9 @@ class DatabaseStore:
     
     async def store_execution_result(
         self,
-        result: ExecutionResult,
-        plan: ExecutionPlan,
-        run_id: str
+        result: "ExecutionResult",
+        plan: "ExecutionPlan",
+        run_id: str,
     ) -> bool:
         """Store order execution result."""
         try:
@@ -230,22 +233,24 @@ class DatabaseStore:
             logger.error(f"Error checking operation status: {e}")
             return False
     
-    async def get_execution_result(self, op_id: str) -> Optional[ExecutionResult]:
+    async def get_execution_result(self, op_id: str) -> Optional["ExecutionResult"]:
         """Get execution result for an operation."""
         try:
+            from .executor import ExecutionResult, ExecutionStatus  # local import to avoid circular
+
             async with self.get_session() as session:
                 order = session.query(DBOrder).filter(DBOrder.op_id == op_id).first()
-                
+
                 if not order:
                     return None
-                
+
                 return ExecutionResult(
                     op_id=order.op_id,
                     status=ExecutionStatus(order.status),
                     order_id=order.alpaca_order_id,
                     filled_qty=order.filled_qty,
                     filled_price=order.filled_price,
-                    error_message=order.error_message
+                    error_message=order.error_message,
                 )
                 
         except Exception as e:

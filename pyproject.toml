@@ -106,6 +106,7 @@ markers = [
     "unit: Unit tests",
     "integration: Integration tests",
     "smoke: Smoke tests",
+    "asyncio: Tests that use asyncio",
 ]
 
 [tool.coverage.run]
